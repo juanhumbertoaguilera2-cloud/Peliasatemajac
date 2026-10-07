@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pelis Atemajac - crea tu propia memoria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="wordmark">Pelis<span>Atemajac</span></div>
+    <p class="tagline">Crea tu propia memoria a tu gusto</p>
+  </div>
+  <details class="instructions-toggle">
+    <summary>¿Cómo funciona?</summary>
+    <ol>
+      <li>Elige tus películas favoritas de la galería. La memoria base es de 16GB.</li>
+      <li>Si tu selección no cabe, te ofrecemos memorias de 32, 64 o 128GB.</li>
+      <li>Escoge dónde recibir tu pedido y listo.</li>
+    </ol>
+  </details>
+</header>
+
+<div class="toolbar">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Buscar película...">
+  </div>
+</div>
+
+<main class="container">
+  <div id="genreAccordion"></div>
+</main>
+
+<div class="cart-bar" id="cartBar">
+  <div class="cart-progress">
+    <div class="cart-progress-track"><div class="cart-progress-fill" id="cartFill"></div></div>
+    <span id="cartLabel">0.0 / 14.4 · Memoria 16GB</span>
+  </div>
+  <button class="btn btn-primary" id="viewCartBtn">Ver selección</button>
+</div>
+
+<div class="modal-overlay" id="tierModal">
+  <div class="modal">
+    <h2>Tu selección ya no cabe en una memoria de 16GB</h2>
+    <p>Elige la capacidad que prefieras:</p>
+    <div class="tier-options">
+      <button class="tier-btn" data-tier="32">32GB <span class="tier-sub">hasta 28.8</span></button>
+      <button class="tier-btn" data-tier="64">64GB <span class="tier-sub">hasta 57.6</span></button>
+      <button class="tier-btn" data-tier="128">128GB <span class="tier-sub">hasta 115.2</span></button>
+    </div>
+    <button class="btn btn-ghost" id="tierCancelBtn">Mejor no, me quedo en 16GB</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cartModal">
+  <div class="modal modal-wide">
+    <h2>Tu selección</h2>
+    <div id="cartLabelModal" class="cart-label-modal"></div>
+    <div class="cart-list" id="cartList"></div>
+
+    <div class="delivery-section" id="deliverySection" style="display:none;">
+      <label>Lugar de entrega</label>
+      <div class="delivery-options">
+        <button class="delivery-btn" data-lugar="Parque Rojo">Parque Rojo</button>
+        <button class="delivery-btn" data-lugar="Santa Tere">Santa Tere</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cartCloseBtn">Seguir viendo</button>
+      <button class="btn btn-primary" id="confirmOrderBtn">Continuar con la entrega</button>
+    </div>
+    <div class="status-msg" id="orderStatusMsg"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <h2>¡Pedido recibido!</h2>
+    <p id="successMsg"></p>
+    <button class="btn btn-primary" id="successCloseBtn">Hacer otro pedido</button>
+  </div>
+</div>
+
+<script src="/js/catalog.js"></script>
+</body>
+</html>

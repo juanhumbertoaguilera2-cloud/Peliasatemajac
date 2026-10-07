@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administración - Pelis Atemajac</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+
+<div class="admin-header">
+  <h1>Pelis Atemajac · Admin</h1>
+  <button class="btn btn-ghost" id="logoutBtn" style="display:none;">Cerrar sesión</button>
+</div>
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <h2>Entrar al panel</h2>
+    <input type="password" id="passwordInput" placeholder="Contraseña">
+    <button class="btn btn-primary" id="loginBtn">Entrar</button>
+    <div class="status-msg" id="loginError"></div>
+  </div>
+</div>
+
+<div class="admin-panel" id="adminPanel" style="display:none;">
+
+  <div class="tabs">
+    <button class="tab-btn selected" data-tab="peliculas">Películas</button>
+    <button class="tab-btn" data-tab="generos">Géneros</button>
+    <button class="tab-btn" data-tab="pedidos">Pedidos</button>
+  </div>
+
+  <section class="tab-panel" id="tab-peliculas">
+    <div class="admin-card">
+      <h3 id="movieFormTitle">Agregar película</h3>
+      <form id="movieForm">
+        <input type="hidden" id="movieId">
+        <input type="text" id="movieTitle" placeholder="Título de la película" required>
+        <input type="number" id="movieValor" placeholder="Valor (ej. 1.2)" step="0.1" min="0.1" value="1.2">
+        <input type="file" id="movieImage" accept="image/*">
+        <div class="genre-check-list" id="genreCheckList"></div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <button type="button" class="btn btn-ghost" id="cancelEditBtn" style="display:none;">Cancelar edición</button>
+        </div>
+        <div class="status-msg" id="movieFormMsg"></div>
+      </form>
+    </div>
+
+    <div class="admin-list" id="movieList"></div>
+  </section>
+
+  <section class="tab-panel" id="tab-generos" style="display:none;">
+    <div class="admin-card">
+      <h3>Agregar género</h3>
+      <form id="genreForm">
+        <input type="text" id="genreName" placeholder="Nombre del género" required>
+        <button type="submit" class="btn btn-primary">Agregar</button>
+      </form>
+      <div class="status-msg" id="genreFormMsg"></div>
+    </div>
+    <div class="admin-list" id="genreList"></div>
+  </section>
+
+  <section class="tab-panel" id="tab-pedidos" style="display:none;">
+    <div class="admin-list" id="orderList"></div>
+  </section>
+
+</div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>
