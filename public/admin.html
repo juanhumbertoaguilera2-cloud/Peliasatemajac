@@ -30,6 +30,7 @@
   <div class="tabs">
     <button class="tab-btn selected" data-tab="peliculas">Películas</button>
     <button class="tab-btn" data-tab="generos">Géneros</button>
+    <button class="tab-btn" data-tab="laterales">Imágenes laterales</button>
     <button class="tab-btn" data-tab="pedidos">Pedidos</button>
   </div>
 
@@ -62,7 +63,37 @@
       </form>
       <div class="status-msg" id="genreFormMsg"></div>
     </div>
+    <p class="admin-hint">Arrastra los géneros (por el ícono ⋮⋮) o usa las flechas ▲▼ para acomodarlos. Ese mismo orden se verá en el catálogo.</p>
     <div class="admin-list" id="genreList"></div>
+  </section>
+
+  <section class="tab-panel" id="tab-laterales" style="display:none;">
+    <div class="admin-card">
+      <h3>Imágenes laterales</h3>
+      <p class="admin-hint">Se ven a los costados del catálogo en pantallas grandes (computadora). En celular y tablet no aparecen porque no hay espacio. Peso máximo: 800 KB.</p>
+      <label class="same-check"><input type="checkbox" id="sameBoth"> Usar la misma imagen en ambos lados</label>
+      <div class="side-grid">
+        <div class="side-card">
+          <div class="side-label">Izquierda</div>
+          <div class="side-preview" id="sidePreviewLeft">Sin imagen</div>
+          <input type="file" id="sideFileLeft" accept="image/*">
+          <div class="form-actions">
+            <button type="button" class="btn btn-primary" id="sideUploadLeft">Subir / cambiar</button>
+            <button type="button" class="btn btn-ghost" id="sideRemoveLeft">Quitar</button>
+          </div>
+        </div>
+        <div class="side-card">
+          <div class="side-label">Derecha</div>
+          <div class="side-preview" id="sidePreviewRight">Sin imagen</div>
+          <input type="file" id="sideFileRight" accept="image/*">
+          <div class="form-actions">
+            <button type="button" class="btn btn-primary" id="sideUploadRight">Subir / cambiar</button>
+            <button type="button" class="btn btn-ghost" id="sideRemoveRight">Quitar</button>
+          </div>
+        </div>
+      </div>
+      <div class="status-msg" id="sideMsg"></div>
+    </div>
   </section>
 
   <section class="tab-panel" id="tab-pedidos" style="display:none;">

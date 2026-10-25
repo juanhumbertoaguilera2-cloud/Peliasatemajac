@@ -48,7 +48,7 @@ async function main() {
   for (const name of generosNombres) {
     if (!genreIdByName[name]) {
       const res = await pool.query(
-        'INSERT INTO genres (name) VALUES ($1) ON CONFLICT (name) DO NOTHING RETURNING id',
+        'INSERT INTO genres (name, position) VALUES ($1, COALESCE((SELECT MAX(position) FROM genres), 0) + 1) ON CONFLICT (name) DO NOTHING RETURNING id',
         [name]
       );
       if (res.rows[0]) genreIdByName[name] = res.rows[0].id;

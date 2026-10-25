@@ -36,3 +36,14 @@ CREATE TABLE IF NOT EXISTS order_movies (
 );
 
 CREATE INDEX IF NOT EXISTS idx_movies_title ON movies (title);
+
+-- orden de los géneros (se acomodan arrastrando desde el admin)
+ALTER TABLE genres ADD COLUMN IF NOT EXISTS position INTEGER NOT NULL DEFAULT 0;
+-- a los géneros que ya existían les damos un orden inicial (el de su creación)
+UPDATE genres SET position = id WHERE position = 0;
+
+-- ajustes sueltos del sitio, por ahora las imágenes laterales (side_left / side_right)
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);

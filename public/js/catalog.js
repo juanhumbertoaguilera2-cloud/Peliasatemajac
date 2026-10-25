@@ -33,7 +33,22 @@ const tierModal = document.getElementById('tierModal');
 const cartModal = document.getElementById('cartModal');
 const successModal = document.getElementById('successModal');
 
+async function loadSideImages() {
+  try {
+    const res = await fetch('/api/settings');
+    const cfg = await res.json();
+    [['left', cfg.side_left], ['right', cfg.side_right]].forEach(([lado, archivo]) => {
+      if (!archivo) return;
+      const el = document.createElement('div');
+      el.className = 'side-image side-' + lado;
+      el.innerHTML = `<img src="/uploads/movies/${archivo}" alt="">`;
+      document.body.appendChild(el);
+    });
+  } catch (e) { /* si falla, el catálogo funciona igual sin imágenes laterales */ }
+}
+
 async function init() {
+  loadSideImages();
   const res = await fetch('/api/genres');
   genres = await res.json();
   genres.forEach(g => { genreState[g.name] = { loaded: false, offset: 0, hasMore: true, movies: [] }; });
@@ -177,7 +192,7 @@ async function runSearch(query) {
 
   accordion.innerHTML = '';
   if (movies.length === 0) {
-    accordion.innerHTML = '<div class="no-results">No encontramos películas con ese nombre.</div>';
+    accordion.innerHTML = '<div class="no-results">No encontramos películas con ese nombre.<br><strong>¿No encuentras tu película? Te la conseguimos.</strong></div>';
     return;
   }
 

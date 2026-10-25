@@ -222,3 +222,35 @@ a{color:inherit;}
 .tier-sub{display:block; font-size:11px; font-weight:400; color:var(--text-muted); margin-top:2px; font-family:var(--font-mono);}
 
 .cart-item-valor{color:var(--text-muted); font-size:12px; font-family:var(--font-mono);}
+
+/* ---------- Banner de pedidos especiales ---------- */
+.request-banner{
+  display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:6px 10px;
+  margin:4px 0 18px; padding:14px 18px; text-align:center;
+  background:var(--accent-soft); border:1px solid rgba(255,61,104,0.35); border-radius:var(--radius);
+  font-size:14px; color:var(--text);
+}
+.request-banner strong{font-family:var(--font-display); font-weight:600; color:var(--accent); font-size:15px;}
+.no-results strong{color:var(--accent); font-weight:600;}
+
+/* ---------- Imágenes laterales (solo pantallas grandes) ---------- */
+.side-image{display:none;}
+@media (min-width:1360px){
+  .side-image{
+    display:block; position:fixed; top:176px; z-index:1;
+    width:calc((100vw - 1100px) / 2 - 36px);
+    max-height:calc(100vh - 230px);
+  }
+  .side-image img{width:100%; max-height:calc(100vh - 230px); object-fit:contain; border-radius:var(--radius); display:block;}
+  .side-left{left:18px;}
+  .side-right{right:18px;}
+}
+
+/* barra flotante en pantallas chicas: que no parta el texto en dos líneas */
+.cart-bar .btn-primary{white-space:nowrap;}
+@media (max-width:430px){
+  .cart-bar{padding:8px 8px 8px 16px; gap:10px;}
+  #cartLabel{font-size:11px;}
+  .cart-progress-track{width:32px;}
+  .cart-bar .btn-primary{padding:10px 16px;}
+}

@@ -22,11 +22,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/movies', require('./routes/movies'));
 app.use('/api/genres', require('./routes/genres'));
+app.use('/api/settings', require('./routes/settings'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/admin', require('./routes/admin'));
 
 app.use((err, req, res, next) => {
   console.error(err);
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'La imagen es demasiado grande. Comprímela un poco e inténtalo de nuevo.' });
+  }
   res.status(500).json({ error: err.message || 'Error interno' });
 });
 

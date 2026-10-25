@@ -46,6 +46,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
     document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
     if (btn.dataset.tab === 'pedidos') loadOrders();
+    if (btn.dataset.tab === 'laterales') loadSideImages();
   };
 });
 
@@ -73,23 +74,78 @@ function renderGenreCheckList() {
   });
 }
 
+let draggedIndex = null;
+
 function renderGenreList() {
   const list = document.getElementById('genreList');
   list.innerHTML = '';
-  genres.forEach(g => {
+  genres.forEach((g, i) => {
     const row = document.createElement('div');
-    row.className = 'admin-row';
+    row.className = 'admin-row genre-row';
+    row.draggable = true;
     row.innerHTML = `
-      <div class="admin-row-title">${g.name}</div>
-      <div class="admin-row-actions"><button class="danger">Borrar</button></div>
+      <div class="admin-row-info">
+        <span class="drag-handle" title="Arrastra para acomodar">⋮⋮</span>
+        <div class="admin-row-title">${g.name}</div>
+      </div>
+      <div class="admin-row-actions">
+        <button class="move-up" title="Subir" ${i === 0 ? 'disabled' : ''}>▲</button>
+        <button class="move-down" title="Bajar" ${i === genres.length - 1 ? 'disabled' : ''}>▼</button>
+        <button class="danger delete-btn">Borrar</button>
+      </div>
     `;
-    row.querySelector('button').onclick = async () => {
+    row.querySelector('.move-up').onclick = () => moveGenre(i, i - 1);
+    row.querySelector('.move-down').onclick = () => moveGenre(i, i + 1);
+    row.querySelector('.delete-btn').onclick = async () => {
       if (!confirm(`¿Borrar el género "${g.name}"?`)) return;
       await fetch('/api/genres/' + g.id, { method: 'DELETE' });
       loadGenresAdmin();
     };
+
+    row.addEventListener('dragstart', (e) => {
+      draggedIndex = i;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(i)); // Firefox lo exige
+    });
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      if (draggedIndex !== null && draggedIndex !== i) moveGenre(draggedIndex, i);
+    });
+    row.addEventListener('dragend', () => {
+      draggedIndex = null;
+      document.querySelectorAll('.genre-row').forEach(r => r.classList.remove('dragging', 'drag-over'));
+    });
+
     list.appendChild(row);
   });
+}
+
+async function moveGenre(from, to) {
+  if (to < 0 || to >= genres.length || from === to) return;
+  const marcados = [...document.querySelectorAll('#genreCheckList input:checked')].map(c => c.value);
+  const [item] = genres.splice(from, 1);
+  genres.splice(to, 0, item);
+  renderGenreList();
+  renderGenreCheckList();
+  document.querySelectorAll('#genreCheckList input').forEach(c => { c.checked = marcados.includes(c.value); });
+
+  const res = await fetch('/api/genres/reorder', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids: genres.map(g => g.id) })
+  });
+  if (!res.ok) {
+    alert('No se pudo guardar el orden. Se va a recargar la lista.');
+    loadGenresAdmin();
+  }
 }
 
 document.getElementById('genreForm').onsubmit = async (e) => {
@@ -231,3 +287,56 @@ async function loadOrders() {
 }
 
 checkSession();
+
+
+// ---------- IMÁGENES LATERALES ----------
+function pintarLado(lado, archivo) {
+  const box = document.getElementById(lado === 'left' ? 'sidePreviewLeft' : 'sidePreviewRight');
+  if (archivo) box.innerHTML = `<img src="/uploads/movies/${archivo}" alt="Imagen ${lado === 'left' ? 'izquierda' : 'derecha'}">`;
+  else box.textContent = 'Sin imagen';
+}
+
+async function loadSideImages() {
+  const res = await fetch('/api/settings');
+  const s = await res.json();
+  pintarLado('left', s.side_left);
+  pintarLado('right', s.side_right);
+}
+
+async function subirLado(lado) {
+  const msg = document.getElementById('sideMsg');
+  const input = document.getElementById(lado === 'left' ? 'sideFileLeft' : 'sideFileRight');
+  const file = input.files[0];
+  if (!file) { msg.style.color = 'var(--accent)'; msg.textContent = 'Primero elige una imagen.'; return; }
+  const ambos = document.getElementById('sameBoth').checked;
+
+  const fd = new FormData();
+  fd.append('side', ambos ? 'both' : lado);
+  fd.append('imagen', file);
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = 'Subiendo...';
+  const res = await fetch('/api/settings/side', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (!res.ok) { msg.style.color = 'var(--accent)'; msg.textContent = data.error || 'No se pudo subir la imagen.'; return; }
+
+  input.value = '';
+  pintarLado('left', data.side_left);
+  pintarLado('right', data.side_right);
+  msg.style.color = 'var(--success)';
+  msg.textContent = '✓ Imagen guardada.';
+  setTimeout(() => { msg.textContent = ''; }, 2000);
+}
+
+async function quitarLado(lado) {
+  const msg = document.getElementById('sideMsg');
+  const res = await fetch('/api/settings/side/' + lado, { method: 'DELETE' });
+  const data = await res.json();
+  if (!res.ok) { msg.style.color = 'var(--accent)'; msg.textContent = data.error || 'No se pudo quitar.'; return; }
+  pintarLado('left', data.side_left);
+  pintarLado('right', data.side_right);
+}
+
+document.getElementById('sideUploadLeft').onclick = () => subirLado('left');
+document.getElementById('sideUploadRight').onclick = () => subirLado('right');
+document.getElementById('sideRemoveLeft').onclick = () => quitarLado('left');
+document.getElementById('sideRemoveRight').onclick = () => quitarLado('right');

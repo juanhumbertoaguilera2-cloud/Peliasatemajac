@@ -30,6 +30,15 @@ Si ya capturaste títulos y géneros con la herramienta `pelis-atemajac-captura.
 3. Esto crea los géneros y películas que falten. Si alguna película no traía imagen todavía, queda con una imagen de relleno (`pendiente.jpg`) — súbele la real después desde el admin, editando esa película.
 4. Puedes correrlo varias veces sin duplicar nada: si el título ya existe, lo salta.
 
+## Qué se puede hacer desde el admin (/admin.html)
+
+- **Películas:** crear, editar (título, valor, imagen, géneros) y borrar.
+- **Géneros:** crear, borrar y **acomodar arrastrándolos** (o con las flechas ▲▼). Ese orden es el que ve el cliente en el catálogo.
+- **Imágenes laterales:** una imagen a cada costado del catálogo, que puedes cambiar cuando quieras (la misma o distinta en cada lado). Solo se ven en pantallas grandes (computadora), no en celular.
+- **Pedidos:** ver los pedidos y cambiar su estatus.
+
+El catálogo público muestra arriba un banner: "¿No encuentras tu película? Te la conseguimos".
+
 ## Cómo correrlo en local
 
 1. Necesitas Node.js 18+ y una base de datos Postgres (puedes usar Docker: `docker run -e POSTGRES_PASSWORD=pass -p 5432:5432 postgres`).

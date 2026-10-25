@@ -59,3 +59,21 @@
   padding:6px 10px; border-radius:8px; border:1px solid var(--border);
   background:var(--surface-2); color:var(--text); font-family:var(--font-body); font-size:13px;
 }
+
+/* ---------- Acomodar géneros ---------- */
+.admin-hint{color:var(--text-muted); font-size:13px; line-height:1.6; margin:0 0 14px;}
+.genre-row{cursor:grab;}
+.genre-row.dragging{opacity:0.4;}
+.genre-row.drag-over{border-color:var(--accent); background:var(--accent-soft);}
+.drag-handle{color:var(--text-muted); font-size:18px; letter-spacing:-3px; padding:4px 6px; user-select:none; cursor:grab;}
+.admin-row-actions button:disabled{opacity:0.3; cursor:not-allowed;}
+
+/* ---------- Imágenes laterales ---------- */
+.same-check{display:flex; align-items:center; gap:8px; font-size:14px; margin:4px 0 16px; cursor:pointer;}
+.side-grid{display:grid; grid-template-columns:1fr; gap:16px;}
+@media (min-width:640px){ .side-grid{grid-template-columns:1fr 1fr;} }
+.side-card{background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px;}
+.side-label{font-family:var(--font-display); font-weight:600; font-size:14px;}
+.side-preview{height:220px; border-radius:10px; background:var(--bg); border:1px dashed var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:13px; overflow:hidden;}
+.side-preview img{width:100%; height:100%; object-fit:contain;}
+.side-card input[type=file]{font-size:13px; color:var(--text-muted);}
