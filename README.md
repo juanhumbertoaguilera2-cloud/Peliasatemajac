@@ -35,7 +35,7 @@ Si ya capturaste títulos y géneros con la herramienta `pelis-atemajac-captura.
 - **Películas:** crear, editar (título, valor, imagen, géneros) y borrar.
 - **Géneros:** crear, borrar y **acomodar arrastrándolos** (o con las flechas ▲▼). Ese orden es el que ve el cliente en el catálogo.
 - **Imágenes laterales:** una imagen a cada costado del catálogo, que puedes cambiar cuando quieras (la misma o distinta en cada lado). Solo se ven en pantallas grandes (computadora), no en celular.
-- **Pedidos:** ver los pedidos y cambiar su estatus.
+- **Pedidos:** ver cada pedido con el nombre y celular del cliente (con enlace directo a WhatsApp), cambiar su estatus y borrarlo cuando ya esté procesado.
 
 El catálogo público muestra arriba un banner: "¿No encuentras tu película? Te la conseguimos".
 

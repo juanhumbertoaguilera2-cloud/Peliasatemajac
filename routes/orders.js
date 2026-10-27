@@ -7,9 +7,30 @@ const UBICACIONES = ['Parque Rojo', 'Santa Tere'];
 // tier (GB) -> valor máximo acumulado que le cabe
 const CAPACIDADES = { 16: 14.4, 32: 28.8, 64: 57.6, 128: 115.2 };
 
+// deja el nombre limpio: sin espacios de sobra y con un largo razonable
+function limpiarNombre(valor) {
+  return String(valor || '').replace(/\s+/g, ' ').trim();
+}
+
+// celular mexicano: acepta espacios, guiones, paréntesis y el prefijo +52; devuelve 10 dígitos o null
+function limpiarCelular(valor) {
+  let digitos = String(valor || '').replace(/\D/g, '');
+  if (digitos.length === 12 && digitos.startsWith('52')) digitos = digitos.slice(2);
+  return digitos.length === 10 ? digitos : null;
+}
+
 // POST /api/orders - crear pedido (público)
 router.post('/', async (req, res) => {
   const { movieIds, tier, deliveryLocation } = req.body;
+  const nombre = limpiarNombre(req.body.customerName);
+  const celular = limpiarCelular(req.body.customerPhone);
+
+  if (nombre.length < 2 || nombre.length > 80) {
+    return res.status(400).json({ error: 'Escribe tu nombre para poder identificar tu pedido' });
+  }
+  if (!celular) {
+    return res.status(400).json({ error: 'Escribe tu celular a 10 dígitos (ejemplo: 3312345678)' });
+  }
 
   if (!Array.isArray(movieIds) || movieIds.length === 0) {
     return res.status(400).json({ error: 'Selecciona al menos una película' });
@@ -37,8 +58,8 @@ router.post('/', async (req, res) => {
 
     await client.query('BEGIN');
     const result = await client.query(
-      'INSERT INTO orders (tier, delivery_location, status) VALUES ($1, $2, $3) RETURNING id, created_at',
-      [tier, deliveryLocation, 'pendiente']
+      'INSERT INTO orders (tier, delivery_location, status, customer_name, customer_phone) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at',
+      [tier, deliveryLocation, 'pendiente', nombre, celular]
     );
     const orderId = result.rows[0].id;
     for (const movieId of movieIds) {
@@ -89,6 +110,20 @@ router.patch('/:id/estatus', requireAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al actualizar el estatus' });
+  }
+});
+
+// DELETE /api/orders/:id (admin) - borra un pedido (sus películas se borran con él)
+router.delete('/:id', requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Pedido inválido' });
+  try {
+    const result = await pool.query('DELETE FROM orders WHERE id=$1', [id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Ese pedido ya no existe' });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al borrar el pedido' });
   }
 });
 

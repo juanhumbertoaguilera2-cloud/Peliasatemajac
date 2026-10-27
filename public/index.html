@@ -66,6 +66,14 @@
     <div id="cartLabelModal" class="cart-label-modal"></div>
     <div class="cart-list" id="cartList"></div>
 
+    <div class="customer-section" id="customerSection" style="display:none;">
+      <label for="customerName">Tu nombre</label>
+      <input type="text" id="customerName" maxlength="80" autocomplete="name" placeholder="Nombre y apellido">
+      <label for="customerPhone">Tu celular</label>
+      <input type="tel" id="customerPhone" maxlength="18" inputmode="tel" autocomplete="tel" placeholder="10 dígitos, ej. 3312345678">
+      <p class="field-note">Los usamos solo para identificar tu pedido y contactarte si hace falta.</p>
+    </div>
+
     <div class="delivery-section" id="deliverySection" style="display:none;">
       <label>Lugar de entrega</label>
       <div class="delivery-options">
@@ -76,7 +84,7 @@
 
     <div class="modal-actions">
       <button class="btn btn-ghost" id="cartCloseBtn">Seguir viendo</button>
-      <button class="btn btn-primary" id="confirmOrderBtn">Continuar con la entrega</button>
+      <button class="btn btn-primary" id="confirmOrderBtn">Enviar pedido</button>
     </div>
     <div class="status-msg" id="orderStatusMsg"></div>
   </div>

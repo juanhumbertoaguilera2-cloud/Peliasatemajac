@@ -77,3 +77,10 @@
 .side-preview{height:220px; border-radius:10px; background:var(--bg); border:1px dashed var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:13px; overflow:hidden;}
 .side-preview img{width:100%; height:100%; object-fit:contain;}
 .side-card input[type=file]{font-size:13px; color:var(--text-muted);}
+
+/* ---------- Pedidos ---------- */
+.order-row{align-items:flex-start;}
+.order-row .admin-row-sub{line-height:1.6; font-family:var(--font-body);}
+.order-row .admin-row-sub a{color:var(--accent); text-decoration:none; font-weight:600;}
+.order-row .admin-row-sub a:hover{text-decoration:underline;}
+.order-row .admin-row-actions{align-items:center;}

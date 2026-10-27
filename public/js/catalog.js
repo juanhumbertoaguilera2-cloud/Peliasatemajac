@@ -21,6 +21,10 @@ function saveCartLocal() {
   localStorage.setItem(CART_KEY, JSON.stringify({ selected, tier }));
 }
 
+function esc(texto) {
+  return String(texto).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 function valorAcumulado() {
   return Object.values(selected).reduce((sum, m) => sum + Number(m.valor), 0);
 }
@@ -68,7 +72,7 @@ function renderAccordionShell() {
     section.dataset.genero = genre.name;
     section.innerHTML = `
       <button class="genre-header">
-        <span class="genre-name">${genre.name}</span>
+        <span class="genre-name">${esc(genre.name)}</span>
         <span class="genre-meta">
           <span class="genre-count"></span>
           <span class="genre-chevron">▾</span>
@@ -116,10 +120,10 @@ function buildCard(movie) {
   card.dataset.movieId = movie.id;
   card.innerHTML = `
     <div class="poster">
-      <img src="/uploads/movies/${movie.image_filename}" alt="${movie.title}" loading="lazy">
+      <img src="/uploads/movies/${movie.image_filename}" alt="${esc(movie.title)}" loading="lazy">
       <div class="check">✓</div>
     </div>
-    <div class="title">${movie.title}</div>
+    <div class="title" title="${esc(movie.title)}">${esc(movie.title)}</div>
   `;
   card.onclick = () => toggleSelect(movie, card);
   return card;
@@ -207,7 +211,7 @@ async function runSearch(query) {
     section.className = 'genre-section expanded';
     section.innerHTML = `
       <button class="genre-header">
-        <span class="genre-name">${genreName}</span>
+        <span class="genre-name">${esc(genreName)}</span>
         <span class="genre-meta"><span class="genre-count">${byGenre[genreName].length}</span><span class="genre-chevron">▾</span></span>
       </button>
       <div class="genre-body"><div class="genre-grid"></div></div>
@@ -248,7 +252,7 @@ function renderCartList() {
   Object.values(selected).forEach(movie => {
     const item = document.createElement('div');
     item.className = 'cart-item';
-    item.innerHTML = `<span>${movie.title} <span class="cart-item-valor">(${movie.valor})</span></span><button aria-label="Quitar">✕</button>`;
+    item.innerHTML = `<span>${esc(movie.title)} <span class="cart-item-valor">(${movie.valor})</span></span><button aria-label="Quitar">✕</button>`;
     item.querySelector('button').onclick = () => {
       delete selected[movie.id];
       saveCartLocal();
@@ -259,7 +263,9 @@ function renderCartList() {
     };
     list.appendChild(item);
   });
-  document.getElementById('deliverySection').style.display = Object.keys(selected).length > 0 ? 'block' : 'none';
+  const hayPeliculas = Object.keys(selected).length > 0;
+  document.getElementById('customerSection').style.display = hayPeliculas ? 'block' : 'none';
+  document.getElementById('deliverySection').style.display = hayPeliculas ? 'block' : 'none';
 }
 
 document.querySelectorAll('.delivery-btn').forEach(btn => {
@@ -273,6 +279,11 @@ document.getElementById('confirmOrderBtn').onclick = async () => {
   const statusMsg = document.getElementById('orderStatusMsg');
   const count = Object.keys(selected).length;
   if (count === 0) { statusMsg.textContent = 'Selecciona al menos una película.'; return; }
+  const nombre = document.getElementById('customerName').value.replace(/\s+/g, ' ').trim();
+  let celular = document.getElementById('customerPhone').value.replace(/\D/g, '');
+  if (celular.length === 12 && celular.startsWith('52')) celular = celular.slice(2);
+  if (nombre.length < 2) { statusMsg.textContent = 'Escribe tu nombre.'; document.getElementById('customerName').focus(); return; }
+  if (celular.length !== 10) { statusMsg.textContent = 'Escribe tu celular a 10 dígitos (ejemplo: 3312345678).'; document.getElementById('customerPhone').focus(); return; }
   if (!deliveryLocation) { statusMsg.textContent = 'Elige un lugar de entrega.'; return; }
 
   statusMsg.textContent = 'Enviando pedido...';
@@ -283,7 +294,9 @@ document.getElementById('confirmOrderBtn').onclick = async () => {
       body: JSON.stringify({
         movieIds: Object.keys(selected).map(Number),
         tier,
-        deliveryLocation
+        deliveryLocation,
+        customerName: nombre,
+        customerPhone: celular
       })
     });
     const data = await res.json();
@@ -291,12 +304,15 @@ document.getElementById('confirmOrderBtn').onclick = async () => {
 
     cartModal.classList.remove('active');
     document.getElementById('successMsg').textContent =
-      `Pedido #${data.id} con ${count} películas, entrega en ${deliveryLocation}.`;
+      `¡Gracias, ${nombre}! Pedido #${data.id} con ${count} películas, entrega en ${deliveryLocation}. Te contactaremos al ${celular} si hace falta.`;
     successModal.classList.add('active');
 
     selected = {};
     tier = 16;
     deliveryLocation = null;
+    document.getElementById('customerName').value = '';
+    document.getElementById('customerPhone').value = '';
+    document.querySelectorAll('.delivery-btn').forEach(b => b.classList.remove('selected'));
     saveCartLocal();
     updateCartBar();
     accordion.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));

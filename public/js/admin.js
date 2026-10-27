@@ -1,3 +1,7 @@
+function esc(texto) {
+  return String(texto).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 const loginScreen = document.getElementById('loginScreen');
 const adminPanel = document.getElementById('adminPanel');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -69,7 +73,7 @@ function renderGenreCheckList() {
   genres.forEach(g => {
     const item = document.createElement('label');
     item.className = 'genre-check-item';
-    item.innerHTML = `<input type="checkbox" value="${g.id}"> ${g.name}`;
+    item.innerHTML = `<input type="checkbox" value="${g.id}"> ${esc(g.name)}`;
     container.appendChild(item);
   });
 }
@@ -86,7 +90,7 @@ function renderGenreList() {
     row.innerHTML = `
       <div class="admin-row-info">
         <span class="drag-handle" title="Arrastra para acomodar">⋮⋮</span>
-        <div class="admin-row-title">${g.name}</div>
+        <div class="admin-row-title">${esc(g.name)}</div>
       </div>
       <div class="admin-row-actions">
         <button class="move-up" title="Subir" ${i === 0 ? 'disabled' : ''}>▲</button>
@@ -175,10 +179,10 @@ async function loadMoviesAdmin() {
     row.className = 'admin-row';
     row.innerHTML = `
       <div class="admin-row-info">
-        <img src="/uploads/movies/${m.image_filename}" alt="${m.title}">
+        <img src="/uploads/movies/${m.image_filename}" alt="${esc(m.title)}">
         <div>
-          <div class="admin-row-title">${m.title}</div>
-          <div class="admin-row-sub">Valor: ${m.valor} · ${(m.generos || []).join(', ') || 'Sin género'}</div>
+          <div class="admin-row-title">${esc(m.title)}</div>
+          <div class="admin-row-sub">Valor: ${m.valor} · ${esc((m.generos || []).join(', ') || 'Sin género')}</div>
         </div>
       </div>
       <div class="admin-row-actions">
@@ -253,18 +257,24 @@ async function loadOrders() {
   const list = document.getElementById('orderList');
   list.innerHTML = '';
   if (orders.length === 0) {
-    list.innerHTML = '<p style="color:var(--muted);">Todavía no hay pedidos.</p>';
+    list.innerHTML = '<p class="admin-hint">Todavía no hay pedidos.</p>';
     return;
   }
   orders.forEach(o => {
     const row = document.createElement('div');
-    row.className = 'admin-row';
+    row.className = 'admin-row order-row';
     const fecha = new Date(o.created_at).toLocaleString('es-MX');
+    const nombre = o.customer_name ? esc(o.customer_name) : '<em>Sin nombre (pedido anterior)</em>';
+    const contacto = o.customer_phone
+      ? `${esc(o.customer_phone)} · <a href="https://wa.me/52${esc(o.customer_phone)}" target="_blank" rel="noopener">WhatsApp</a>`
+      : 'Sin celular';
     row.innerHTML = `
       <div class="admin-row-info">
         <div>
-          <div class="admin-row-title">Pedido #${o.id} · ${o.tier} películas · ${o.delivery_location}</div>
-          <div class="admin-row-sub">${fecha} — ${o.peliculas.join(', ')}</div>
+          <div class="admin-row-title">Pedido #${o.id} · ${nombre}</div>
+          <div class="admin-row-sub">Celular: ${contacto}</div>
+          <div class="admin-row-sub">Memoria ${o.tier}GB · ${esc(o.delivery_location)} · ${esc(fecha)}</div>
+          <div class="admin-row-sub">${o.peliculas.length} ${o.peliculas.length === 1 ? 'película' : 'películas'}: ${esc(o.peliculas.join(', '))}</div>
         </div>
       </div>
       <div class="admin-row-actions">
@@ -273,6 +283,7 @@ async function loadOrders() {
           <option value="armado"${o.status === 'armado' ? ' selected' : ''}>Armado</option>
           <option value="entregado"${o.status === 'entregado' ? ' selected' : ''}>Entregado</option>
         </select>
+        <button class="danger delete-order">Borrar</button>
       </div>
     `;
     row.querySelector('select').onchange = async (e) => {
@@ -281,6 +292,19 @@ async function loadOrders() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: e.target.value })
       });
+    };
+    row.querySelector('.delete-order').onclick = async () => {
+      const estatus = row.querySelector('select').value;
+      const pregunta = estatus === 'entregado'
+        ? `¿Borrar el pedido #${o.id}?`
+        : `El pedido #${o.id} todavía NO está marcado como Entregado.\n\n¿Borrarlo de todos modos?`;
+      if (!confirm(pregunta + '\n\nEsto no se puede deshacer.')) return;
+      const r = await fetch('/api/orders/' + o.id, { method: 'DELETE' });
+      if (!r.ok) {
+        const d = await r.json().catch(() => ({}));
+        alert(d.error || 'No se pudo borrar el pedido.');
+      }
+      loadOrders();
     };
     list.appendChild(row);
   });
