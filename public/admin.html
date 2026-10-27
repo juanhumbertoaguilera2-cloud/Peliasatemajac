@@ -51,7 +51,18 @@
       </form>
     </div>
 
+    <div class="list-toolbar">
+      <input type="text" id="movieSearch" placeholder="Buscar película por título...">
+      <select id="movieGenreFilter">
+        <option value="">Todos los géneros</option>
+        <option value="__sin__">Sin género</option>
+      </select>
+      <label class="filter-check"><input type="checkbox" id="movieNoImage"> Solo sin imagen</label>
+    </div>
+    <div class="list-summary" id="movieSummary"></div>
+    <div class="pager" id="pagerTop"></div>
     <div class="admin-list" id="movieList"></div>
+    <div class="pager" id="pagerBottom"></div>
   </section>
 
   <section class="tab-panel" id="tab-generos" style="display:none;">

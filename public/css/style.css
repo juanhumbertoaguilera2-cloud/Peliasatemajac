@@ -267,3 +267,9 @@ a{color:inherit;}
 .customer-section input::placeholder{color:var(--text-muted);}
 .customer-section input:focus{outline:2px solid var(--accent); border-color:transparent;}
 .field-note{font-size:12px !important; color:var(--text-muted); margin:8px 0 0 !important; line-height:1.5 !important;}
+
+/* película cuya imagen no se encontró */
+.poster-vacio::before{
+  content:'Sin imagen'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:var(--text-muted); font-size:12px; font-family:var(--font-display);
+}

@@ -65,6 +65,7 @@ async function loadGenresAdmin() {
   genres = await res.json();
   renderGenreCheckList();
   renderGenreList();
+  renderGenreFilter();
 }
 
 function renderGenreCheckList() {
@@ -169,20 +170,60 @@ document.getElementById('genreForm').onsubmit = async (e) => {
 };
 
 // ---------- PELÍCULAS ----------
+// ---- Lista de películas: paginada, con búsqueda y filtros (pensada para miles) ----
+const FILAS_POR_PAGINA = 30;
+let listaEstado = { page: 1, buscar: '', genero: '', sinImagen: false };
+let scrollAntesDeEditar = null;
+
+function renderGenreFilter() {
+  const sel = document.getElementById('movieGenreFilter');
+  const actual = sel.value;
+  sel.innerHTML = '<option value="">Todos los géneros</option><option value="__sin__">Sin género</option>' +
+    genres.map(g => `<option value="${esc(g.name)}">${esc(g.name)}</option>`).join('');
+  sel.value = [...sel.options].some(o => o.value === actual) ? actual : '';
+  listaEstado.genero = sel.value;
+}
+
+function numero(n) { return Number(n).toLocaleString('es-MX'); }
+
 async function loadMoviesAdmin() {
-  const res = await fetch('/api/movies?limit=1000');
-  const movies = await res.json();
+  const params = new URLSearchParams({
+    page: listaEstado.page, pageSize: FILAS_POR_PAGINA,
+    buscar: listaEstado.buscar, genero: listaEstado.genero
+  });
+  if (listaEstado.sinImagen) params.set('sinImagen', '1');
+
+  const res = await fetch('/api/movies/admin?' + params.toString());
+  if (!res.ok) {
+    document.getElementById('movieList').innerHTML = '<p class="admin-hint">No se pudo cargar la lista. Recarga la página e inicia sesión de nuevo.</p>';
+    return;
+  }
+  const data = await res.json();
+  listaEstado.page = data.page;
+
+  // resumen
+  const desde = data.total === 0 ? 0 : (data.page - 1) * data.pageSize + 1;
+  const hasta = Math.min(data.page * data.pageSize, data.total);
+  const filtrado = listaEstado.buscar || listaEstado.genero || listaEstado.sinImagen;
+  document.getElementById('movieSummary').innerHTML =
+    `Mostrando <strong>${numero(desde)}–${numero(hasta)}</strong> de <strong>${numero(data.total)}</strong>${filtrado ? ' (con filtros)' : ''}` +
+    ` · Catálogo completo: ${numero(data.stats.total)} películas, ${numero(data.stats.sinImagen)} sin imagen`;
+
+  // filas
   const list = document.getElementById('movieList');
   list.innerHTML = '';
-  movies.forEach(m => {
+  if (data.movies.length === 0) {
+    list.innerHTML = `<p class="admin-hint">${filtrado ? 'No hay películas con esos filtros.' : 'Todavía no has agregado películas.'}</p>`;
+  }
+  data.movies.forEach(m => {
     const row = document.createElement('div');
     row.className = 'admin-row';
     row.innerHTML = `
       <div class="admin-row-info">
-        <img src="/uploads/movies/${m.image_filename}" alt="${esc(m.title)}">
+        <img src="/uploads/movies/${esc(m.image_filename)}" alt="" loading="lazy">
         <div>
           <div class="admin-row-title">${esc(m.title)}</div>
-          <div class="admin-row-sub">Valor: ${m.valor} · ${esc((m.generos || []).join(', ') || 'Sin género')}</div>
+          <div class="admin-row-sub">Valor: ${m.valor} · ${esc((m.generos || []).join(', ') || 'Sin género')}${m.image_filename === 'pendiente.jpg' ? ' · <span class="tag-sin-imagen">sin imagen</span>' : ''}</div>
         </div>
       </div>
       <div class="admin-row-actions">
@@ -190,6 +231,13 @@ async function loadMoviesAdmin() {
         <button class="danger delete-btn">Borrar</button>
       </div>
     `;
+    // si el archivo de la imagen no se encuentra, mostrar un recuadro en lugar del ícono roto
+    row.querySelector('img').onerror = (e) => {
+      const falta = document.createElement('div');
+      falta.className = 'thumb-falta';
+      falta.textContent = 's/img';
+      e.target.replaceWith(falta);
+    };
     row.querySelector('.edit-btn').onclick = () => editMovie(m);
     row.querySelector('.delete-btn').onclick = async () => {
       if (!confirm(`¿Borrar "${m.title}"?`)) return;
@@ -198,7 +246,60 @@ async function loadMoviesAdmin() {
     };
     list.appendChild(row);
   });
+
+  renderPager(data);
 }
+
+function irAPagina(n) {
+  listaEstado.page = Math.max(1, n);
+  loadMoviesAdmin().then(() => {
+    document.getElementById('movieSummary').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+function renderPager(data) {
+  ['pagerTop', 'pagerBottom'].forEach(id => {
+    const el = document.getElementById(id);
+    if (data.totalPages <= 1) { el.innerHTML = ''; return; }
+    const primera = data.page <= 1, ultima = data.page >= data.totalPages;
+    el.innerHTML = `
+      <button class="pg-btn" data-go="1" ${primera ? 'disabled' : ''} title="Primera">«</button>
+      <button class="pg-btn" data-go="${data.page - 1}" ${primera ? 'disabled' : ''}>‹ Anterior</button>
+      <span class="pg-info">Página
+        <input type="number" class="pg-input" min="1" max="${data.totalPages}" value="${data.page}" aria-label="Ir a la página">
+        de ${numero(data.totalPages)}</span>
+      <button class="pg-btn" data-go="${data.page + 1}" ${ultima ? 'disabled' : ''}>Siguiente ›</button>
+      <button class="pg-btn" data-go="${data.totalPages}" ${ultima ? 'disabled' : ''} title="Última">»</button>
+    `;
+    el.querySelectorAll('.pg-btn').forEach(b => { b.onclick = () => irAPagina(Number(b.dataset.go)); });
+    const input = el.querySelector('.pg-input');
+    input.onchange = () => {
+      const n = parseInt(input.value, 10);
+      if (Number.isInteger(n)) irAPagina(Math.min(Math.max(n, 1), data.totalPages));
+    };
+    input.onkeydown = (e) => { if (e.key === 'Enter') input.blur(); };
+  });
+}
+
+let buscarTimer;
+document.getElementById('movieSearch').addEventListener('input', (e) => {
+  clearTimeout(buscarTimer);
+  buscarTimer = setTimeout(() => {
+    listaEstado.buscar = e.target.value.trim();
+    listaEstado.page = 1;
+    loadMoviesAdmin();
+  }, 300);
+});
+document.getElementById('movieGenreFilter').addEventListener('change', (e) => {
+  listaEstado.genero = e.target.value;
+  listaEstado.page = 1;
+  loadMoviesAdmin();
+});
+document.getElementById('movieNoImage').addEventListener('change', (e) => {
+  listaEstado.sinImagen = e.target.checked;
+  listaEstado.page = 1;
+  loadMoviesAdmin();
+});
 
 function editMovie(movie) {
   editingMovieId = movie.id;
@@ -210,6 +311,7 @@ function editMovie(movie) {
   document.querySelectorAll('#genreCheckList input').forEach(cb => {
     cb.checked = (movie.generos || []).includes(genres.find(g => g.id == cb.value)?.name);
   });
+  scrollAntesDeEditar = window.scrollY;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -246,8 +348,11 @@ document.getElementById('movieForm').onsubmit = async (e) => {
   if (!res.ok) { msg.textContent = data.error || 'Error al guardar'; return; }
 
   msg.textContent = '';
+  const volverA = editingMovieId ? scrollAntesDeEditar : null;
+  scrollAntesDeEditar = null;
   resetMovieForm();
-  loadMoviesAdmin();
+  await loadMoviesAdmin();
+  if (volverA !== null) window.scrollTo({ top: volverA, behavior: 'smooth' });   // regresa a donde estabas en la lista
 };
 
 // ---------- PEDIDOS ----------

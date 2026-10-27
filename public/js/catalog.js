@@ -125,6 +125,11 @@ function buildCard(movie) {
     </div>
     <div class="title" title="${esc(movie.title)}">${esc(movie.title)}</div>
   `;
+  // si el archivo de la imagen no existe, mostrar un recuadro "Sin imagen" en lugar del ícono roto
+  card.querySelector('img').onerror = (e) => {
+    e.target.remove();
+    card.querySelector('.poster').classList.add('poster-vacio');
+  };
   card.onclick = () => toggleSelect(movie, card);
   return card;
 }

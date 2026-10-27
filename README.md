@@ -32,7 +32,7 @@ Si ya capturaste títulos y géneros con la herramienta `pelis-atemajac-captura.
 
 ## Qué se puede hacer desde el admin (/admin.html)
 
-- **Películas:** crear, editar (título, valor, imagen, géneros) y borrar.
+- **Películas:** crear, editar (título, valor, imagen, géneros) y borrar. La lista va paginada (30 por página) y tiene buscador por título (ignora acentos y mayúsculas), filtro por género, filtro "solo sin imagen" y contador, así que funciona igual con miles de películas.
 - **Géneros:** crear, borrar y **acomodar arrastrándolos** (o con las flechas ▲▼). Ese orden es el que ve el cliente en el catálogo.
 - **Imágenes laterales:** una imagen a cada costado del catálogo, que puedes cambiar cuando quieras (la misma o distinta en cada lado). Solo se ven en pantallas grandes (computadora), no en celular.
 - **Pedidos:** ver cada pedido con el nombre y celular del cliente (con enlace directo a WhatsApp), cambiar su estatus y borrarlo cuando ya esté procesado.
